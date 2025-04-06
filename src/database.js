@@ -1,19 +1,32 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, doc, setDoc, updateDoc, arrayUnion, getDoc, getDocs, collection, query, where } from "firebase/firestore";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  updateDoc,
+  arrayUnion,
+  getDoc,
+  getDocs,
+  collection,
+  query,
+  where,
+} from "firebase/firestore";
 // import { getAnalytics } from "firebase/analytics";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 
+const apiKey = process.env.REACT_APP_FIREBASE_API_KEY;
+
 // Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyCv20xdorAMebAIhsbMWM9CVnbq5lG6qjg",
-    authDomain: "wikirace-79bde.firebaseapp.com",
-    projectId: "wikirace-79bde",
-    storageBucket: "wikirace-79bde.firebasestorage.app",
-    messagingSenderId: "90797917790",
-    appId: "1:90797917790:web:96780f8286f0bf273816cf",
-    measurementId: "G-B25WSKJBTX"
-  };
+  apiKey: apiKey,
+  authDomain: "wikirace-79bde.firebaseapp.com",
+  projectId: "wikirace-79bde",
+  storageBucket: "wikirace-79bde.firebasestorage.app",
+  messagingSenderId: "90797917790",
+  appId: "1:90797917790:web:96780f8286f0bf273816cf",
+  measurementId: "G-B25WSKJBTX",
+};
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -25,14 +38,14 @@ const db = getFirestore(app);
  * @returns {string} The UUID of the created game.
  */
 export async function createGame() {
-    const gameId = uuidv4();
-    const gameRef = doc(db, "games", gameId);
+  const gameId = uuidv4();
+  const gameRef = doc(db, "games", gameId);
 
-    await setDoc(gameRef, {
-        players: [] // Initialize players array
-    });
+  await setDoc(gameRef, {
+    players: [], // Initialize players array
+  });
 
-    return gameId;
+  return gameId;
 }
 
 /**
@@ -41,11 +54,11 @@ export async function createGame() {
  * @param {string} link - The Wikipedia link to log.
  */
 export async function logVisitedLink(gameId, link) {
-    const gameRef = doc(db, "games", gameId);
+  const gameRef = doc(db, "games", gameId);
 
-    await updateDoc(gameRef, {
-        visitedLinks: arrayUnion(link) // Add the link to the visitedLinks array
-    });
+  await updateDoc(gameRef, {
+    visitedLinks: arrayUnion(link), // Add the link to the visitedLinks array
+  });
 }
 
 /**
@@ -54,15 +67,15 @@ export async function logVisitedLink(gameId, link) {
  * @returns {Promise<string[]>} A promise that resolves to an array of player names.
  */
 export async function getPlayersInGame(gameId) {
-    const gameRef = doc(db, "games", gameId);
-    const gameDoc = await getDoc(gameRef);
+  const gameRef = doc(db, "games", gameId);
+  const gameDoc = await getDoc(gameRef);
 
-    if (gameDoc.exists()) {
-        const data = gameDoc.data();
-        return data.players || []; // Return players array or an empty array if not present
-    } else {
-        throw new Error("Game not found");
-    }
+  if (gameDoc.exists()) {
+    const data = gameDoc.data();
+    return data.players || []; // Return players array or an empty array if not present
+  } else {
+    throw new Error("Game not found");
+  }
 }
 
 /**
@@ -71,11 +84,11 @@ export async function getPlayersInGame(gameId) {
  * @param {string} playerName - The name of the player to add.
  */
 export async function addPlayerToGame(gameId, playerName) {
-    const gameRef = doc(db, "games", gameId);
+  const gameRef = doc(db, "games", gameId);
 
-    await updateDoc(gameRef, {
-        players: arrayUnion(playerName) // Add the player to the players array
-    });
+  await updateDoc(gameRef, {
+    players: arrayUnion(playerName), // Add the player to the players array
+  });
 }
 
 /**
@@ -84,11 +97,11 @@ export async function addPlayerToGame(gameId, playerName) {
  * @param {string} joinCode - The join code to associate with the game.
  */
 export async function setGameJoinCode(gameId, joinCode) {
-    const gameRef = doc(db, "games", gameId);
+  const gameRef = doc(db, "games", gameId);
 
-    await updateDoc(gameRef, {
-        joinCode: joinCode // Set the join code for the game
-    });
+  await updateDoc(gameRef, {
+    joinCode: joinCode, // Set the join code for the game
+  });
 }
 
 /**
@@ -97,16 +110,16 @@ export async function setGameJoinCode(gameId, joinCode) {
  * @returns {Promise<string>} A promise that resolves to the game ID.
  */
 export async function getGameByJoinCode(joinCode) {
-    const gamesRef = collection(db, "games");
-    const q = query(gamesRef, where("joinCode", "==", joinCode));
-    const querySnapshot = await getDocs(q);
+  const gamesRef = collection(db, "games");
+  const q = query(gamesRef, where("joinCode", "==", joinCode));
+  const querySnapshot = await getDocs(q);
 
-    if (!querySnapshot.empty) {
-        const gameDoc = querySnapshot.docs[0];
-        return gameDoc.id; // Return the game ID
-    } else {
-        throw new Error("Game with the specified join code not found");
-    }
+  if (!querySnapshot.empty) {
+    const gameDoc = querySnapshot.docs[0];
+    return gameDoc.id; // Return the game ID
+  } else {
+    throw new Error("Game with the specified join code not found");
+  }
 }
 
 /**
@@ -115,8 +128,8 @@ export async function getGameByJoinCode(joinCode) {
  * @param {string} playerName - The name of the player to add.
  */
 export async function joinGameByJoinCode(joinCode, playerName) {
-    const gameId = await getGameByJoinCode(joinCode);
-    await addPlayerToGame(gameId, playerName);
+  const gameId = await getGameByJoinCode(joinCode);
+  await addPlayerToGame(gameId, playerName);
 }
 
 /**
@@ -124,11 +137,11 @@ export async function joinGameByJoinCode(joinCode, playerName) {
  * @param {string} gameId - The UUID of the game.
  */
 export async function startGame(gameId) {
-    const gameRef = doc(db, "games", gameId);
+  const gameRef = doc(db, "games", gameId);
 
-    await updateDoc(gameRef, {
-        status: "started" // Set the game status to "started"
-    });
+  await updateDoc(gameRef, {
+    status: "started", // Set the game status to "started"
+  });
 }
 
 /**
@@ -137,15 +150,15 @@ export async function startGame(gameId) {
  * @returns {Promise<Object>} A promise that resolves to the game state object.
  */
 export async function getGameStateByJoinCode(joinCode) {
-    const gameId = await getGameByJoinCode(joinCode); // Retrieve the game ID using the join code
-    const gameRef = doc(db, "games", gameId);
-    const gameDoc = await getDoc(gameRef);
+  const gameId = await getGameByJoinCode(joinCode); // Retrieve the game ID using the join code
+  const gameRef = doc(db, "games", gameId);
+  const gameDoc = await getDoc(gameRef);
 
-    if (gameDoc.exists()) {
-        return gameDoc.data().status; // Return the game state object
-    } else {
-        throw new Error("Game not found");
-    }
+  if (gameDoc.exists()) {
+    return gameDoc.data().status; // Return the game state object
+  } else {
+    throw new Error("Game not found");
+  }
 }
 
 /**
@@ -153,39 +166,39 @@ export async function getGameStateByJoinCode(joinCode) {
  * @param {string} gameId - The UUID of the game.
  */
 export async function setStartAndEndPages(gameId) {
-    const gameRef = doc(db, "games", gameId);
+  const gameRef = doc(db, "games", gameId);
 
-    // Function to get a random Wikipedia page title
-    const getRandomPage = async () => {
-        const response = await axios.get(`https://en.wikipedia.org/w/api.php`, {
-            params: {
-                action: "query",
-                list: "random",
-                rnnamespace: 0, // Only get pages in the main namespace
-                rnlimit: 1, // Get one random page
-                format: "json",
-                origin: "*"
-            }
-        });
-
-        return response.data.query.random[0].title; // Return the title of the random page
-    };
-    console.log("Getting random pages")
-
-    // Get two random pages
-    const startPage = await getRandomPage();
-    const endPage = await getRandomPage();
-
-    // Ensure the pages are not the same
-    if (startPage === endPage) {
-        return setStartAndEndPages(gameId)
-    }
-
-    // Update the game document with the starting and ending pages
-    await updateDoc(gameRef, {
-        startPage: startPage,
-        endPage: endPage
+  // Function to get a random Wikipedia page title
+  const getRandomPage = async () => {
+    const response = await axios.get(`https://en.wikipedia.org/w/api.php`, {
+      params: {
+        action: "query",
+        list: "random",
+        rnnamespace: 0, // Only get pages in the main namespace
+        rnlimit: 1, // Get one random page
+        format: "json",
+        origin: "*",
+      },
     });
+
+    return response.data.query.random[0].title; // Return the title of the random page
+  };
+  console.log("Getting random pages");
+
+  // Get two random pages
+  const startPage = await getRandomPage();
+  const endPage = await getRandomPage();
+
+  // Ensure the pages are not the same
+  if (startPage === endPage) {
+    return setStartAndEndPages(gameId);
+  }
+
+  // Update the game document with the starting and ending pages
+  await updateDoc(gameRef, {
+    startPage: startPage,
+    endPage: endPage,
+  });
 }
 
 /**
@@ -193,13 +206,13 @@ export async function setStartAndEndPages(gameId) {
  * @param {string} gameId - The UUID of the game.
  */
 export async function setFixedStartAndEndPages(gameId, startPage, endPage) {
-    const gameRef = doc(db, "games", gameId);
+  const gameRef = doc(db, "games", gameId);
 
-    // Update the game document with the starting and ending pages
-    await updateDoc(gameRef, {
-        startPage: startPage,
-        endPage: endPage
-    });
+  // Update the game document with the starting and ending pages
+  await updateDoc(gameRef, {
+    startPage: startPage,
+    endPage: endPage,
+  });
 }
 
 /**
@@ -208,19 +221,19 @@ export async function setFixedStartAndEndPages(gameId, startPage, endPage) {
  * @returns {Promise<Object>} A promise that resolves to an object containing the start and end pages.
  */
 export async function getStartAndEndPagesByJoinCode(joinCode) {
-    const gameId = await getGameByJoinCode(joinCode); // Retrieve the game ID using the join code
-    const gameRef = doc(db, "games", gameId);
-    const gameDoc = await getDoc(gameRef);
+  const gameId = await getGameByJoinCode(joinCode); // Retrieve the game ID using the join code
+  const gameRef = doc(db, "games", gameId);
+  const gameDoc = await getDoc(gameRef);
 
-    if (gameDoc.exists()) {
-        const data = gameDoc.data();
-        return {
-            startPage: data.startPage || null,
-            endPage: data.endPage || null
-        };
-    } else {
-        throw new Error("Game not found");
-    }
+  if (gameDoc.exists()) {
+    const data = gameDoc.data();
+    return {
+      startPage: data.startPage || null,
+      endPage: data.endPage || null,
+    };
+  } else {
+    throw new Error("Game not found");
+  }
 }
 
 /**
@@ -229,20 +242,25 @@ export async function getStartAndEndPagesByJoinCode(joinCode) {
  * @param {string} playerName - The username of the player which is visiting the link.
  * @param {string} pageName - The name of the page to add.
  */
-export async function addVisitedLinkByJoinCode(joinCode, playerName, pageName, endPage) {
-    const gameId = await getGameByJoinCode(joinCode); // Retrieve the game ID using the join code
-    const gameRef = doc(db, "games", gameId);
+export async function addVisitedLinkByJoinCode(
+  joinCode,
+  playerName,
+  pageName,
+  endPage
+) {
+  const gameId = await getGameByJoinCode(joinCode); // Retrieve the game ID using the join code
+  const gameRef = doc(db, "games", gameId);
 
+  await updateDoc(gameRef, {
+    [`visitedLinks_${playerName}`]: arrayUnion(pageName), // Add the page name to the VisitedLinks array
+  });
+
+  if (pageName === endPage) {
     await updateDoc(gameRef, {
-        [`visitedLinks_${playerName}`]: arrayUnion(pageName) // Add the page name to the VisitedLinks array
+      winner: playerName,
+      status: "ended", // Set the game status to "ended"
     });
-
-    if (pageName === endPage) {
-        await updateDoc(gameRef, {
-            winner: playerName,
-            status: "ended" // Set the game status to "ended"
-        });
-    }
+  }
 }
 
 /**
@@ -251,16 +269,16 @@ export async function addVisitedLinkByJoinCode(joinCode, playerName, pageName, e
  * @returns {Promise<string|null>} A promise that resolves to the winner's name or null if no winner.
  */
 export async function getWinnerByJoinCode(joinCode) {
-    const gameId = await getGameByJoinCode(joinCode); // Retrieve the game ID using the join code
-    const gameRef = doc(db, "games", gameId);
-    const gameDoc = await getDoc(gameRef);
+  const gameId = await getGameByJoinCode(joinCode); // Retrieve the game ID using the join code
+  const gameRef = doc(db, "games", gameId);
+  const gameDoc = await getDoc(gameRef);
 
-    if (gameDoc.exists()) {
-        const data = gameDoc.data();
-        return data.winner || null; // Return the winner's name or null if no winner
-    } else {
-        throw new Error("Game not found");
-    }
+  if (gameDoc.exists()) {
+    const data = gameDoc.data();
+    return data.winner || null; // Return the winner's name or null if no winner
+  } else {
+    throw new Error("Game not found");
+  }
 }
 
 /**
@@ -269,24 +287,24 @@ export async function getWinnerByJoinCode(joinCode) {
  * @returns {Promise<Object>} A promise that resolves to a dictionary where keys are player names and values are arrays of visited links.
  */
 export async function getVisitedLinksByJoinCode(joinCode) {
-    const gameId = await getGameByJoinCode(joinCode); // Retrieve the game ID using the join code
-    const gameRef = doc(db, "games", gameId);
-    const gameDoc = await getDoc(gameRef);
+  const gameId = await getGameByJoinCode(joinCode); // Retrieve the game ID using the join code
+  const gameRef = doc(db, "games", gameId);
+  const gameDoc = await getDoc(gameRef);
 
-    if (gameDoc.exists()) {
-        const data = gameDoc.data();
-        const visitedLinks = {};
+  if (gameDoc.exists()) {
+    const data = gameDoc.data();
+    const visitedLinks = {};
 
-        // Extract all keys starting with "visitedLinks_" and map them to player names
-        Object.keys(data).forEach((key) => {
-            if (key.startsWith("visitedLinks_")) {
-                const playerName = key.replace("visitedLinks_", "");
-                visitedLinks[playerName] = data[key] || [];
-            }
-        });
+    // Extract all keys starting with "visitedLinks_" and map them to player names
+    Object.keys(data).forEach((key) => {
+      if (key.startsWith("visitedLinks_")) {
+        const playerName = key.replace("visitedLinks_", "");
+        visitedLinks[playerName] = data[key] || [];
+      }
+    });
 
-        return visitedLinks;
-    } else {
-        throw new Error("Game not found");
-    }
+    return visitedLinks;
+  } else {
+    throw new Error("Game not found");
+  }
 }

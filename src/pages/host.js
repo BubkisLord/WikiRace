@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from "react";
 import TopNavbar from "../components/top_navbar";
-import { createGame, addPlayerToGame, setGameJoinCode, getPlayersInGame, startGame, setStartAndEndPages, setFixedStartAndEndPages } from "../database"; // Import Firebase functions
+import {
+  createGame,
+  addPlayerToGame,
+  setGameJoinCode,
+  getPlayersInGame,
+  startGame,
+  setStartAndEndPages,
+  setFixedStartAndEndPages,
+} from "../database"; // Import Firebase functions
 
 const Host = () => {
   const [isHosting, setIsHosting] = useState(false);
   const [gameCode, setGameCode] = useState(""); // Replace public IP with game code
-  const [playerName, setPlayerName] = useState("")
+  const [playerName, setPlayerName] = useState("");
   const [participants, setParticipants] = useState([]);
   const [gameId, setGameId] = useState(""); // Store the game ID
 
@@ -15,7 +23,9 @@ const Host = () => {
       const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
       let code = "";
       for (let i = 0; i < 6; i++) {
-        code += characters.charAt(Math.floor(Math.random() * characters.length));
+        code += characters.charAt(
+          Math.floor(Math.random() * characters.length)
+        );
       }
       setGameCode(code);
 
@@ -59,10 +69,16 @@ const Host = () => {
 
   const _startGame = async () => {
     if (participants.length >= 2) {
-      await startGame(gameId)
-      await setFixedStartAndEndPages(gameId, "Albert_Einstein", "Theoretical_physics")
-      // await setStartAndEndPages(gameId)
-      localStorage.setItem('playerName', playerName)
+      await startGame(gameId);
+      if (false) {
+        await setFixedStartAndEndPages(
+          gameId,
+          "Albert_Einstein",
+          "Theoretical_physics"
+        );
+      }
+      await setStartAndEndPages(gameId);
+      localStorage.setItem("playerName", playerName);
       window.location.href = `/game/${gameCode}`;
     } else {
       alert("At least 2 participants are required to start the game.");

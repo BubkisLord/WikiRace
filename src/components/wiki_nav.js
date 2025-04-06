@@ -2,7 +2,12 @@ import React, { useEffect, useState } from "react";
 import DOMPurify from "dompurify";
 import { addVisitedLinkByJoinCode } from "../database";
 
-export default function WikipediaNavigator({ playerName, joinCode, startPage, endPage }) {
+export default function WikipediaNavigator({
+  playerName,
+  joinCode,
+  startPage,
+  endPage,
+}) {
   const [pageTitle, setPageTitle] = useState(startPage);
   const [pageHtml, setPageHtml] = useState("");
   const [loading, setLoading] = useState(false);
