@@ -19,7 +19,7 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function TopNavbar({ navigation_items }) {
+export default function TopNavbar({ navigation_items, show_title }) {
   return (
     <div>
       <Disclosure as="nav" className="bg-gray-800">
@@ -145,18 +145,16 @@ export default function TopNavbar({ navigation_items }) {
         </DisclosurePanel>
       </Disclosure>
 
-      <header className="bg-gray-700 shadow-sm">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-100">
-            {navigation_items.find((item) => item.current).name}
-          </h1>
-        </div>
-      </header>
-      <main>
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          {/* Your content */}
-        </div>
-      </main>
+      {show_title && (
+        <header className="bg-gray-700 shadow-sm">
+          <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-100">
+              {navigation_items.find((item) => item.current)?.name}
+            </h1>
+          </div>
+        </header>
+      )}
+      
     </div>
   );
 }
