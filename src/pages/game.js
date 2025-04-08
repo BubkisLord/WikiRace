@@ -59,9 +59,9 @@ const GamePage = () => {
         try {
           const status = await getGameStateByJoinCode(joinCode);
           if (status === "started") {
-            clearInterval(interval);
+            setPages(await getStartAndEndPagesByJoinCode(joinCode));
             setGameStatus("started");
-            window.location.reload();
+            clearInterval(interval);
           }
         } catch (error) {
           console.error("Error checking game status:", error);
@@ -120,11 +120,11 @@ const GamePage = () => {
       );
     }
 
-    if (gameStatus !== "started") {
+    if (gameStatus !== "started" || !pages.endPage) {
       return (
         <div className="flex items-center justify-center min-h-screen bg-gray-700">
           <h2 className="text-6xl font-extrabold text-gray-100 text-center">
-            Waiting for the game to start
+            {gameStatus === "started" && !pages.endPage ? "Getting Game Info" : "Waiting for the game to start"}
             <span className="inline-block w-8 text-left">{dots}</span>
           </h2>
         </div>
@@ -135,7 +135,7 @@ const GamePage = () => {
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-700">
         <header className="w-full bg-blue-600 text-gray-100 py-4 shadow-md">
           <h1 className="text-center text-2xl font-bold">
-            TARGET: {pages["endPage"]}
+            Target Page: {pages["endPage"]}
           </h1>
         </header>
         <main className="flex-grow w-full p-4">
@@ -147,7 +147,7 @@ const GamePage = () => {
           />
         </main>
         <footer className="w-full bg-gray-800 text-white py-2 text-center">
-          <p className="text-sm">© 2023 Wiki Race Game. All rights reserved.</p>
+          <p className="text-sm">Wiki Race Game by BubkisLord</p>
         </footer>
       </div>
     );
