@@ -46,7 +46,7 @@ export default function WikipediaNavigator({
     if (target.tagName === "A" && target.href.includes("/wiki/")) {
       e.preventDefault();
       const newTitle = decodeURIComponent(target.href.split("/wiki/")[1]);
-      addVisitedLinkByJoinCode(joinCode, playerName, newTitle, endPage);
+      addVisitedLinkByJoinCode(joinCode, playerName, newTitle.replaceAll("_", " "), endPage);
       fetchPage(newTitle);
     }
   };
