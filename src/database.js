@@ -169,37 +169,97 @@ export async function setStartAndEndPages(gameId) {
   const gameRef = doc(db, "games", gameId);
 
   // Function to get a random Wikipedia page title
-  const getRandomPage = async () => {
-    const response = await axios.get(`https://en.wikipedia.org/w/api.php`, {
-      params: {
-        action: "query",
-        list: "random",
-        rnnamespace: 0, // Only get pages in the main namespace
-        rnlimit: 1, // Get one random page
-        format: "json",
-        origin: "*",
-      },
-    });
+  const getRandomPageWithBacklinks = async () => {
+    const apiEndpoint = 'https://en.wikipedia.org/w/api.php';
 
-    return response.data.query.random[0].title; // Return the title of the random page
+    // Fetch a random page
+    const fetchRandomPage = async () => {
+      const response = await axios.get(apiEndpoint, {
+        params: {
+          action: "query",
+          list: "random",
+          rnnamespace: 0,
+          rnlimit: 1,
+          format: "json",
+          origin: "*",
+        },
+      });
+      return response.data.query.random[0].title;
+    };
+
+    // Count backlinks for a given page title
+    const countBacklinks = async (title) => {
+      let count = 0;
+      let lhcontinue = null;
+
+      do {
+        const params = {
+          action: "query",
+          prop: "linkshere",
+          titles: title,
+          lhlimit: "70", // Maximum limit
+          format: "json",
+          origin: "*",
+        };
+        if (lhcontinue) params.lhcontinue = lhcontinue;
+
+        const response = await axios.get(apiEndpoint, { params });
+        const pages = response.data.query.pages;
+        const page = Object.values(pages)[0];
+
+        if (page.linkshere) count += page.linkshere.length;
+
+        lhcontinue = response.data.continue?.lhcontinue;
+      } while (lhcontinue);
+
+      return count;
+    };
+
+    while (true) {
+      const title = await fetchRandomPage();
+      const backlinks = await countBacklinks(title);
+      console.log(`Checked "${title}": ${backlinks} backlinks`);
+
+      if (backlinks >= 300) {
+        return { title, backlinks };
+      }
+    }
   };
-  console.log("Getting random pages");
 
-  // Get two random pages
-  const startPage = await getRandomPage();
-  const endPage = await getRandomPage();
+  // Fetch 12 valid pages concurrently
+  const pages = [];
+  while (pages.length < 2) {
+    const pagePromises = Array.from({ length: 3 }, () => getRandomPageWithBacklinks());
+    const results = await Promise.all(pagePromises);
+
+    // Filter out duplicates and add unique pages to the list
+    results.forEach((page) => {
+      if (!pages.some((p) => p.title === page.title)) {
+        pages.push(page);
+      }
+    });
+  }
+
+  // Select two pages with the highest backlinks
+  pages.sort((a, b) => b.backlinks - a.backlinks);
+  const [page1, page2] = pages.slice(0, 2);
+
+  let startPage = page2.title;
+  let endPage = page1.title;
 
   // Ensure the pages are not the same
-  if (startPage === endPage) {
-    return setStartAndEndPages(gameId);
+  while (startPage === endPage) {
+    const newPage = await getRandomPageWithBacklinks();
+    startPage = newPage.title;
   }
 
   // Update the game document with the starting and ending pages
   await updateDoc(gameRef, {
-    startPage: startPage,
-    endPage: endPage,
+    startPage,
+    endPage,
   });
 }
+
 
 /**
  * Sets the starting and ending Wikipedia pages for a game.
