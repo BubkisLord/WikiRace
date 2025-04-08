@@ -45,6 +45,7 @@
     ]
   },
   "devDependencies": {
+    "@netlify/vite-plugin-react-router": "^1.0.1",
     "tailwindcss": "^3.4.17"
   }
 }
